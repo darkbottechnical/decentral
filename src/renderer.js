@@ -1,5 +1,5 @@
-// renderer.js
 const ifaceSelect = document.getElementById("ifaceSelect");
+const nameInput = document.getElementById("nameInput");
 const msgInput = document.getElementById("msgInput");
 const sendBtn = document.getElementById("sendBtn");
 const log = document.getElementById("log");
@@ -36,9 +36,9 @@ sendBtn.onclick = () => {
         alert("Choose an interface first!");
         return;
     }
-    window.udp.send(msgInput.value || "Hello!");
+    window.udp.send(msgInput.value || "Hello!", nameInput.value || "anon");
 };
 
 window.udp.onMessage((data) => {
-    log.value += `\n${data.from}: ${data.message}`;
+    log.value += `\n${data.source?.name || "unknown"}: ${data.message}`;
 });

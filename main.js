@@ -4,41 +4,13 @@ const path = require("path");
 const os = require("os");
 const dgram = require("dgram");
 
+const { listIPv4Interfaces, ipToInt, intToIp } = require("./src/ip-helpers.js");
+
 let mainWindow;
 let udpSocket;
 const PORT = 4123;
 
-// ---- Interface helpers ----
-function listIPv4Interfaces() {
-    const nets = os.networkInterfaces();
-    const addrs = [];
-    for (const name of Object.keys(nets)) {
-        for (const ni of nets[name]) {
-            if (ni.family === "IPv4" && !ni.internal) {
-                addrs.push({ name, address: ni.address, netmask: ni.netmask });
-            }
-        }
-    }
-    return addrs;
-}
-function ipToInt(ip) {
-    return (
-        ip
-            .split(".")
-            .reduce((acc, oct) => (acc << 8) + parseInt(oct, 10), 0) >>> 0
-    );
-}
-function intToIp(i) {
-    return [
-        (i >>> 24) & 0xff,
-        (i >>> 16) & 0xff,
-        (i >>> 8) & 0xff,
-        i & 0xff,
-    ].join(".");
-}
-
-// ---- UDP Setup (after user chooses interface) ----
-function setupUDP(localIp, netmask) {
+function setupUDP(localIp, netmask, ifaceName = "unknown") {
     if (udpSocket) udpSocket.close(); // reset if already bound
     udpSocket = dgram.createSocket("udp4");
 
@@ -48,12 +20,14 @@ function setupUDP(localIp, netmask) {
     const BROADCAST_ADDR = intToIp(broadcastInt);
 
     udpSocket.on("message", (msg, rinfo) => {
-        console.log(`Received: ${msg} from ${rinfo.address}:${rinfo.port}`);
-        if (mainWindow) {
-            mainWindow.webContents.send("udp-message", {
-                message: msg.toString(),
-                from: `${rinfo.address}:${rinfo.port}`,
-            });
+        try {
+            const parsed = JSON.parse(msg.toString());
+            console.log("Received (parsed):", parsed);
+            if (mainWindow) {
+                mainWindow.webContents.send("udp-message", parsed);
+            }
+        } catch (err) {
+            console.warn("Received non-JSON message:", msg.toString());
         }
     });
 
@@ -69,28 +43,44 @@ function setupUDP(localIp, netmask) {
         });
     });
 
-    // store broadcast addr for sendMessage
+    // store broadcast addr and identity for sendMessage
     udpSocket.broadcastAddr = BROADCAST_ADDR;
+    udpSocket.localIdentity = { ip: localIp, name: ifaceName };
 }
 
-function sendMessage(message) {
+function sendMessage(message, name) {
     if (!udpSocket) return;
-    const buf = Buffer.from(message);
+    const packet = {
+        source: {
+            ip:
+                (udpSocket.localIdentity && udpSocket.localIdentity.ip) ||
+                "unknown",
+            name:
+                name ||
+                (udpSocket.localIdentity && udpSocket.localIdentity.name) ||
+                "unknown",
+        },
+        message,
+    };
+    const buf = Buffer.from(JSON.stringify(packet));
     udpSocket.send(buf, 0, buf.length, PORT, udpSocket.broadcastAddr, (err) => {
         if (err) console.error("Send error:", err);
-        else console.log("Sent:", message, "->", udpSocket.broadcastAddr);
+        else console.log("Sent:", packet, "->", udpSocket.broadcastAddr);
     });
 }
 
 // ---- IPC ----
-ipcMain.on("choose-interface", (event, { address, netmask }) => {
-    setupUDP(address, netmask);
+ipcMain.on("choose-interface", (event, { address, netmask, name }) => {
+    setupUDP(address, netmask, name);
 });
-ipcMain.on("send-udp-message", (event, msg) => {
-    sendMessage(msg);
+ipcMain.on("send-udp-message", (event, msg, name) => {
+    sendMessage(msg, name);
 });
 
+//
 // ---- Electron window ----
+//
+
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 800,
