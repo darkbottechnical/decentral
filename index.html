@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta viewport="width=device-width, initial-scale=1.0" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="script-src 'self'"
+        />
+        <link rel="stylesheet" href="./assets/main.css" />
+        <title>UDP Messenger</title>
+    </head>
+    <body>
+        <nav class="sidebar">
+            <h1>Dollar Store Discord</h1>
+        </nav>
+        <main class="main-content">
+            <h1>UDP Messenger</h1>
+            <div class="horizontal-container">
+                <div class="vertical-label-setting">
+                    <label for="nameInput">Display Name</label>
+
+                    <input
+                        class="input"
+                        id="nameInput"
+                        placeholder="Your name"
+                        value="Anonymous"
+                    />
+                </div>
+                <div class="vertical-label-setting">
+                    <label for="ifaceSelect">Interface</label>
+                    <select id="ifaceSelect">
+                        <option value="none">Select Interface...</option>
+                    </select>
+                </div>
+            </div>
+
+            <pre><textarea id="log" rows="18" cols="60" readonly></textarea></pre>
+
+            <div class="horizontal-container">
+                <input
+                    class="input"
+                    id="msgInput"
+                    placeholder="Type a message"
+                />
+                <button class="btn" id="sendBtn">Send</button>
+            </div>
+            <p id="status"></p>
+        </main>
+        <script src="./src/renderer.js"></script>
+    </body>
+</html>

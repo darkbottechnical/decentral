@@ -7,7 +7,12 @@ function listIPv4Interfaces() {
     for (const name of Object.keys(nets)) {
         for (const ni of nets[name]) {
             if (ni.family === "IPv4" && !ni.internal) {
-                addrs.push({ name, address: ni.address, netmask: ni.netmask });
+                addrs.push({
+                    name,
+                    address: ni.address,
+                    netmask: ni.netmask,
+                    mac: ni.mac,
+                });
             }
         }
     }
