@@ -103,6 +103,15 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     });
 
+    window.udp.statusChange((status) => {
+        const statusList = document.getElementById("statusList");
+        const entry = document.createElement("div");
+        entry.textContent = `${
+            status.source?.name || "unknown"
+        } [${status.source?.mac.replaceAll(":", "")}] is ${status.status}`;
+        statusList.appendChild(entry);
+    });
+
     // ---- debug messages ----
     window.udp.debug((data) => {
         queueLog(`[DEBUG] ${data.message}`);

@@ -8,5 +8,7 @@ contextBridge.exposeInMainWorld("udp", {
         ipcRenderer.on("interfaces-list", (e, list) => callback(list)),
     onMessage: (callback) =>
         ipcRenderer.on("udp-message", (e, data) => callback(data)),
+    statusChange: (callback) =>
+        ipcRenderer.on("status-change", (e, status) => callback(status)),
     debug: (callback) => ipcRenderer.on("debug", (e, data) => callback(data)),
 });
