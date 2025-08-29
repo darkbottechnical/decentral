@@ -9,8 +9,42 @@ const { listIPv4Interfaces, ipToInt, intToIp } = require("./src/ip-helpers.js");
 let mainWindow;
 let udpSocket;
 let statusInterval;
+let displayName;
 
 const PORT = 4123;
+
+function sendBroadcastMessage(status = "online") {
+    if (!udpSocket) {
+        console.error("UDP socket is not available");
+        mainWindow?.webContents.send("debug", {
+            message: "UDP socket is not available",
+        });
+        clearInterval(statusInterval);
+        return;
+    }
+    const statusPacket = {
+        type: "status",
+        source: {
+            ip: udpSocket.localIdentity?.ip || "unknown",
+            name: displayName || "unknown",
+            mac: udpSocket.localIdentity?.mac || "unknown",
+        },
+        status,
+    };
+    console.log("Broadcasting status:", statusPacket);
+    mainWindow?.webContents.send("debug", {
+        message: `Broadcasting status: ${JSON.stringify(statusPacket)}`,
+    });
+    const buf = Buffer.from(JSON.stringify(statusPacket));
+    udpSocket.send(buf, 0, buf.length, PORT, udpSocket.broadcastAddr, (err) => {
+        if (err) {
+            console.error("Status send error:", err);
+            mainWindow?.webContents.send("debug", {
+                message: `Status send error: ${err.message}`,
+            });
+        }
+    });
+}
 
 // ---- UDP Setup ----
 function setupUDP(localIp, netmask, ifaceName = "unknown", mac = "unknown") {
@@ -52,48 +86,8 @@ function setupUDP(localIp, netmask, ifaceName = "unknown", mac = "unknown") {
                 message: `Bound UDP socket to ${localIp}:${PORT} (broadcast ${BROADCAST_ADDR})`,
             });
             if (statusInterval) clearInterval(statusInterval);
-
-            statusInterval = setInterval(() => {
-                if (!udpSocket) {
-                    console.error("UDP socket is not available");
-                    mainWindow?.webContents.send("debug", {
-                        message: "UDP socket is not available",
-                    });
-                    clearInterval(statusInterval);
-                    return;
-                }
-                const statusPacket = {
-                    type: "status",
-                    source: {
-                        ip: udpSocket.localIdentity?.ip || "unknown",
-                        name: udpSocket.localIdentity?.name || "unknown",
-                        mac: udpSocket.localIdentity?.mac || "unknown",
-                    },
-                    status: "online",
-                };
-                console.log("Broadcasting status:", statusPacket);
-                mainWindow?.webContents.send("debug", {
-                    message: `Broadcasting status: ${JSON.stringify(
-                        statusPacket
-                    )}`,
-                });
-                const buf = Buffer.from(JSON.stringify(statusPacket));
-                udpSocket.send(
-                    buf,
-                    0,
-                    buf.length,
-                    PORT,
-                    udpSocket.broadcastAddr,
-                    (err) => {
-                        if (err) {
-                            console.error("Status send error:", err);
-                            mainWindow?.webContents.send("debug", {
-                                message: `Status send error: ${err.message}`,
-                            });
-                        }
-                    }
-                );
-            }, 10000);
+            sendBroadcastMessage();
+            statusInterval = setInterval(sendBroadcastMessage, 10000);
         } else {
             console.error("mainWindow is not available during bind");
         }
@@ -127,6 +121,11 @@ ipcMain.on("choose-interface", (event, { address, netmask, name, mac }) => {
 ipcMain.on("send-udp-message", (event, msg, name) => {
     sendMessage(msg, name);
 });
+ipcMain.on("set-display-name", (event, name) => {
+    if (udpSocket && udpSocket.localIdentity) {
+        displayName = name || "anon";
+    }
+});
 
 // ---- Electron Window ----
 function createWindow() {
@@ -155,6 +154,7 @@ function createWindow() {
 app.whenReady().then(createWindow);
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();
+    sendBroadcastMessage("offline");
 });
 app.on("activate", () => {
     if (!mainWindow) createWindow();

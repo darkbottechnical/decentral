@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const sendBtn = document.getElementById("sendBtn");
     const log = document.getElementById("log");
 
+    let onlineUsers = [];
     let chosen = null;
 
     // ---- log batching to avoid freezing ----
@@ -64,6 +65,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // ---- update display name in main process ----
+    nameInput.addEventListener("change", () => {
+        window.udp.setDisplayName(nameInput.value || "anon");
+    });
+
     // ---- send message helper ----
     function sendMessage() {
         if (!chosen) {
@@ -106,9 +112,12 @@ document.addEventListener("DOMContentLoaded", () => {
     window.udp.statusChange((status) => {
         const statusList = document.getElementById("statusList");
         const entry = document.createElement("div");
-        entry.textContent = `${
-            status.source?.name || "unknown"
-        } [${status.source?.mac.replaceAll(":", "")}] is ${status.status}`;
+        entry.innerHTML = `
+            <span class="status-${status.status}">●</span>${status.source?.ip}
+            ${
+                status.source?.name || "unknown"
+            } [${status.source?.mac.replaceAll(":", "")}] is ${status.status}
+        `;
         statusList.appendChild(entry);
     });
 
