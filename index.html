@@ -24,14 +24,22 @@
                         class="input"
                         id="nameInput"
                         placeholder="Your name"
-                        value="Anonymous"
                     />
                 </div>
                 <div class="vertical-label-setting">
-                    <label for="ifaceSelect">Interface</label>
-                    <select id="ifaceSelect">
-                        <option value="none">Select Interface...</option>
+                    <label for="statusSelect">Status</label>
+                    <select id="statusSelect">
+                        <option value="online">
+                            <span class="status-online"></span>Online
+                        </option>
+                        <option value="idle">
+                            <span class="status-idle"></span>Idle
+                        </option>
                     </select>
+                </div>
+                <div class="vertical-label-setting">
+                    <label for="ifaceSelect">Interface</label>
+                    <select id="ifaceSelect"></select>
                 </div>
             </div>
 

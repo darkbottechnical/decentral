@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld("udp", {
     chooseInterface: (iface) => ipcRenderer.send("choose-interface", iface),
     send: (msg, name) => ipcRenderer.send("send-udp-message", msg, name),
     setDisplayName: (name) => ipcRenderer.send("set-display-name", name),
+    setStatus: (status) => ipcRenderer.send("set-status", status),
     onInterfaces: (callback) =>
         ipcRenderer.on("interfaces-list", (e, list) => callback(list)),
     onMessage: (callback) =>

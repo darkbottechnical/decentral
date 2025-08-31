@@ -10,10 +10,11 @@ let mainWindow;
 let udpSocket;
 let statusInterval;
 let displayName;
+let selfStatus = "online";
 
 const PORT = 4123;
 
-function sendBroadcastMessage(status = "online") {
+function sendBroadcastMessage() {
     if (!udpSocket) {
         console.error("UDP socket is not available");
         mainWindow?.webContents.send("debug", {
@@ -29,12 +30,8 @@ function sendBroadcastMessage(status = "online") {
             name: displayName || "unknown",
             mac: udpSocket.localIdentity?.mac || "unknown",
         },
-        status,
+        status: selfStatus,
     };
-    console.log("Broadcasting status:", statusPacket);
-    mainWindow?.webContents.send("debug", {
-        message: `Broadcasting status: ${JSON.stringify(statusPacket)}`,
-    });
     const buf = Buffer.from(JSON.stringify(statusPacket));
     udpSocket.send(buf, 0, buf.length, PORT, udpSocket.broadcastAddr, (err) => {
         if (err) {
@@ -46,9 +43,26 @@ function sendBroadcastMessage(status = "online") {
     });
 }
 
+function whoIsOn() {
+    if (!udpSocket) return;
+    const packet = {
+        type: "who-is-on",
+        source: {
+            ip: udpSocket.localIdentity?.ip || "unknown",
+            name: displayName || "unknown",
+            mac: udpSocket.localIdentity?.mac || "unknown",
+        },
+    };
+    const buf = Buffer.from(JSON.stringify(packet));
+    udpSocket.send(buf, 0, buf.length, PORT, udpSocket.broadcastAddr, (err) => {
+        if (err) console.error("Who-is-on send error:", err);
+    });
+}
+
 // ---- UDP Setup ----
 function setupUDP(localIp, netmask, ifaceName = "unknown", mac = "unknown") {
     if (udpSocket) udpSocket.close();
+    if (statusInterval) clearInterval(statusInterval);
     udpSocket = dgram.createSocket("udp4");
 
     const ipInt = ipToInt(localIp);
@@ -64,6 +78,8 @@ function setupUDP(localIp, netmask, ifaceName = "unknown", mac = "unknown") {
                     mainWindow?.webContents.send("udp-message", parsed);
                 } else if (parsed.type === "status") {
                     mainWindow?.webContents.send("status-change", parsed);
+                } else if (parsed.type === "who-is-on") {
+                    sendBroadcastMessage();
                 }
             } catch {
                 mainWindow?.webContents.send("udp-message", {
@@ -94,6 +110,7 @@ function setupUDP(localIp, netmask, ifaceName = "unknown", mac = "unknown") {
     });
     udpSocket.broadcastAddr = BROADCAST_ADDR;
     udpSocket.localIdentity = { ip: localIp, name: ifaceName, mac };
+    whoIsOn();
 }
 
 function sendMessage(message, name) {
@@ -115,22 +132,31 @@ function sendMessage(message, name) {
 }
 
 // ---- IPC ----
-ipcMain.on("choose-interface", (event, { address, netmask, name, mac }) => {
-    setupUDP(address, netmask, name, mac);
-});
+ipcMain.on(
+    "choose-interface",
+    (event, { address, netmask, name, mac, displayName: dName }) => {
+        displayName = dName || name;
+        setupUDP(address, netmask, displayName, mac);
+    }
+);
 ipcMain.on("send-udp-message", (event, msg, name) => {
     sendMessage(msg, name);
 });
 ipcMain.on("set-display-name", (event, name) => {
     if (udpSocket && udpSocket.localIdentity) {
-        displayName = name || "anon";
+        displayName = name;
+        sendBroadcastMessage();
     }
+});
+ipcMain.on("set-status", (event, status) => {
+    selfStatus = status;
+    sendBroadcastMessage();
 });
 
 // ---- Electron Window ----
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 900,
+        width: 1050,
         height: 700,
         webPreferences: {
             preload: path.join(__dirname, "src/preload.js"),
