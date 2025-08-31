@@ -112,9 +112,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const messageEl = document.createElement("div");
         messageEl.className = "message";
         messageEl.innerHTML = `
-        <div class="message-author">${message.source?.name} [${
-            message.source.mac
-        }] -> ${message.to || "everyone"}</div>
+        <div class="message-author">${
+            message.source?.name
+        } [${message.source.mac.replaceAll(":", "")}] -> ${
+            message.to || "everyone"
+        }</div>
         <div class="message-message">${message.message}</div>
         `;
         messagesDiv.appendChild(messageEl);

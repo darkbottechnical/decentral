@@ -179,7 +179,8 @@ function createWindow() {
 app.whenReady().then(createWindow);
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();
-    sendBroadcastMessage("offline");
+    selfStatus = "offline";
+    sendBroadcastMessage();
 });
 app.on("activate", () => {
     if (!mainWindow) createWindow();
