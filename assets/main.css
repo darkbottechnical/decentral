@@ -35,6 +35,7 @@ body {
 .horizontal-container {
     width: 100%;
     display: flex;
+    align-items: center;
 }
 
 .vertical-label-setting {
@@ -104,6 +105,16 @@ option {
     text-wrap: row;
 }
 
+.message-broadcast {
+    background-color: rgba(230, 230, 230, 0.1);
+}
+.message-dm-you {
+    background-color: rgba(235, 229, 149, 0.2);
+}
+.message-dm-other {
+    background-color: rgba(82, 148, 192, 0.1);
+}
+
 .btn {
     margin: 10px;
     height: 40px;
@@ -156,4 +167,5 @@ option {
     background-color: rgba(230, 230, 230, 0.1);
     padding: 10px;
     border-radius: 4px;
+    cursor: pointer;
 }

@@ -110,6 +110,7 @@ function setupUDP(localIp, netmask, ifaceName = "unknown", mac = "unknown") {
     });
     udpSocket.broadcastAddr = BROADCAST_ADDR;
     udpSocket.localIdentity = { ip: localIp, name: ifaceName, mac };
+    whoIsOn();
 }
 
 function sendMessage(message, name, to = null) {
@@ -123,9 +124,20 @@ function sendMessage(message, name, to = null) {
         },
         message,
     };
+    let targetIp = udpSocket.broadcastAddr;
+    if (to && to.ip) {
+        packet.dest = {
+            ip: to.ip,
+            mac: to.mac || undefined,
+            name: to.name || undefined,
+        };
+        targetIp = to.ip;
+        if (packet.dest.mac != udpSocket.localIdentity.mac)
+            mainWindow?.webContents.send("udp-message", packet);
+    }
     console.log(packet);
     const buf = Buffer.from(JSON.stringify(packet));
-    udpSocket.send(buf, 0, buf.length, PORT, udpSocket.broadcastAddr, (err) => {
+    udpSocket.send(buf, 0, buf.length, PORT, targetIp, (err) => {
         if (err) console.error("Send error:", err);
     });
 }
@@ -138,8 +150,8 @@ ipcMain.on(
         setupUDP(address, netmask, displayName, mac);
     }
 );
-ipcMain.on("send-udp-message", (event, msg, name) => {
-    sendMessage(msg, name);
+ipcMain.on("send-udp-message", (event, msg, name, to = null) => {
+    sendMessage(msg, name, to ? to : null);
 });
 ipcMain.on("set-display-name", (event, name) => {
     if (udpSocket && udpSocket.localIdentity) {

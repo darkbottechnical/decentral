@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const sendBtn = document.getElementById("sendBtn");
     const messagesDiv = document.getElementById("messages-container");
     const statusList = document.getElementById("statusList");
+    const destInput = document.getElementById("destInput");
 
     // --- State ---
     let onlineUsers = [];
@@ -72,18 +73,38 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- Send Message Helper ---
     function sendMessage() {
         if (!chosen) {
-            queueLog("[WARN] No interface selected - message was not sent.");
+            document.getElementById("status").textContent =
+                "No interface selected - message was not sent.";
             return;
         }
         if (!msgInput.value) return;
+
         if (msgInput.value.length > 500) {
             document.getElementById("status").textContent =
                 "Message is too long!";
             return;
         }
+
         const message = msgInput.value;
         const name = nameInput.value;
-        window.udp.send(message, name);
+        let dest = null;
+
+        if (destInput.value !== "everyone" && destInput.value !== "") {
+            const macWithColons = destInput.value.match(/.{1,2}/g).join(":");
+            const user = onlineUsers.find((u) => u.mac === macWithColons);
+
+            if (user) {
+                dest = {
+                    ip: user.ip,
+                    mac: macWithColons,
+                    name: user.name,
+                };
+            } else {
+                console.warn("No matching user for", macWithColons);
+            }
+        }
+
+        window.udp.send(message, name, dest);
         msgInput.value = "";
         document.getElementById("status").textContent = "";
     }
@@ -114,10 +135,22 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="message-author">${
             message.source?.name
         } [${message.source.mac.replaceAll(":", "")}] -> ${
-            message.to || "everyone"
+            message.dest && message.dest.mac === chosen.mac
+                ? "you"
+                : message.dest
+                ? message.dest.name
+                : "everyone"
         }</div>
         <div class="message-message">${message.message}</div>
         `;
+        if (message.dest && message.dest.mac === chosen.mac) {
+            messageEl.classList.add("message-dm-you");
+        } else if (message.dest) {
+            messageEl.classList.add("message-dm-other");
+        } else {
+            messageEl.classList.add("message-broadcast");
+        }
+
         messagesDiv.appendChild(messageEl);
         if (scrolledUp == false) {
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -136,6 +169,9 @@ document.addEventListener("DOMContentLoaded", () => {
             } [${status.mac.replaceAll(":", "")}]</strong><br/>
                     ${status.name || "unknown"}
                 `;
+            entry.addEventListener("click", () => {
+                destInput.value = status.mac.replaceAll(":", "");
+            });
             statusList.appendChild(entry);
         });
     }

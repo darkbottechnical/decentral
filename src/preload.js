@@ -3,7 +3,8 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("udp", {
     chooseInterface: (iface) => ipcRenderer.send("choose-interface", iface),
-    send: (msg, name) => ipcRenderer.send("send-udp-message", msg, name),
+    send: (msg, name, to = null) =>
+        ipcRenderer.send("send-udp-message", msg, name, to ? to : null),
     setDisplayName: (name) => ipcRenderer.send("set-display-name", name),
     setStatus: (status) => ipcRenderer.send("set-status", status),
     onInterfaces: (callback) =>
