@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusSelect = document.getElementById("statusSelect");
     const msgInput = document.getElementById("msgInput");
     const sendBtn = document.getElementById("sendBtn");
-    const log = document.getElementById("log");
+    const messagesDiv = document.getElementById("messages-container");
     const statusList = document.getElementById("statusList");
 
     // --- State ---
@@ -17,25 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedName = localStorage.getItem("displayName");
     nameInput.value = savedName;
     window.udp.setDisplayName(savedName);
-
-    // --- Log batching to avoid freezing ---
-    const logQueue = [];
-    let flushing = false;
-    function flushLog() {
-        if (logQueue.length) {
-            log.value += logQueue.join("\n") + "\n";
-            logQueue.length = 0;
-            log.scrollTop = log.scrollHeight;
-        }
-        flushing = false;
-    }
-    function queueLog(msg) {
-        logQueue.push(msg);
-        if (!flushing) {
-            flushing = true;
-            requestAnimationFrame(flushLog);
-        }
-    }
 
     // --- Interface Dropdown Population ---
     window.udp.onInterfaces((list) => {
@@ -75,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
             chosen.displayName = nameInput.value;
             window.udp.chooseInterface(chosen);
             onlineUsers = [];
+            messagesDiv.innerHTML = "";
         }
     });
 
@@ -117,13 +99,28 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- Message Receive Handler ---
-    window.udp.onMessage((data) => {
-        queueLog(
-            `${data.source?.name || "unknown"} [${data.source?.mac.replaceAll(
-                ":",
-                ""
-            )}] -> ${data.dest?.name || "everyone"}:\n  ${data.message}`
-        );
+    window.udp.onMessage((message) => {
+        let scrolledUp = false;
+        if (
+            messagesDiv.scrollTop != messagesDiv.scrollHeight &&
+            messagesDiv.scrollTop != 0
+        ) {
+            scrolledUp = true;
+        } else {
+            scrolledUp = false;
+        }
+        const messageEl = document.createElement("div");
+        messageEl.className = "message";
+        messageEl.innerHTML = `
+        <div class="message-author">${message.source?.name} [${
+            message.source.mac
+        }] -> ${message.to || "everyone"}</div>
+        <div class="message-message">${message.message}</div>
+        `;
+        messagesDiv.appendChild(messageEl);
+        if (scrolledUp == false) {
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
     });
 
     // --- Online Users Rendering ---
@@ -184,6 +181,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Debug Message Handler ---
     window.udp.debug((data) => {
-        queueLog(`[DEBUG] ${data.message}`);
+        // TODO
     });
 });

@@ -110,10 +110,9 @@ function setupUDP(localIp, netmask, ifaceName = "unknown", mac = "unknown") {
     });
     udpSocket.broadcastAddr = BROADCAST_ADDR;
     udpSocket.localIdentity = { ip: localIp, name: ifaceName, mac };
-    whoIsOn();
 }
 
-function sendMessage(message, name) {
+function sendMessage(message, name, to = null) {
     if (!udpSocket) return;
     const packet = {
         type: "message",
@@ -156,8 +155,8 @@ ipcMain.on("set-status", (event, status) => {
 // ---- Electron Window ----
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 1050,
-        height: 700,
+        width: 1250,
+        height: 750,
         webPreferences: {
             preload: path.join(__dirname, "src/preload.js"),
             contextIsolation: true,

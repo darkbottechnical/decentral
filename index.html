@@ -8,14 +8,13 @@
             content="script-src 'self'"
         />
         <link rel="stylesheet" href="./assets/main.css" />
-        <title>UDP Messenger</title>
+        <title>Dollar Store Discord</title>
     </head>
     <body>
         <nav class="sidebar">
             <h1>Dollar Store Discord</h1>
         </nav>
         <main class="main-content">
-            <h1>UDP Messenger</h1>
             <div class="horizontal-container">
                 <div class="vertical-label-setting">
                     <label for="nameInput">Display Name</label>
@@ -42,8 +41,7 @@
                     <select id="ifaceSelect"></select>
                 </div>
             </div>
-
-            <pre><textarea id="log" rows="18" cols="60" readonly></textarea></pre>
+            <div id="messages-container"></div>
 
             <div class="horizontal-container">
                 <input
@@ -56,7 +54,12 @@
             <p id="status"></p>
         </main>
         <side>
-            <div id="statusList"></div>
+            <div id="statusList">
+                <p>
+                    Attach an interface to see online users. Or stay lonely, I
+                    couldn't care less.
+                </p>
+            </div>
         </side>
         <script src="./src/renderer.js"></script>
     </body>

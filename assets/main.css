@@ -15,7 +15,7 @@ body {
 }
 
 .sidebar {
-    width: 220px;
+    width: 300px;
     background-color: var(--main-color);
     color: white;
     padding: 20px;
@@ -23,6 +23,8 @@ body {
 }
 
 .main-content {
+    display: flex;
+    flex-direction: column;
     flex: 1;
     padding: 20px;
     background-color: var(--dark-main-color);
@@ -69,17 +71,35 @@ option {
     flex: 2;
 }
 
-#log {
+#messages-container {
     width: 100%;
+    flex: 4;
     padding: 10px;
+    margin: 10px 0px;
     color: #fff;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: #222;
     border: none;
     outline: none;
     border-radius: 4px;
     box-sizing: border-box;
     overflow-y: scroll;
     resize: none;
+}
+
+.message {
+    background-color: rgba(230, 230, 230, 0.1);
+    font-size: 1em;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0px 0px 20px;
+}
+
+.message-author {
+    font-weight: bold;
+}
+
+.message-message {
+    margin: 5px 10px;
 }
 
 .btn {
@@ -101,7 +121,7 @@ option {
 }
 
 #statusList {
-    width: 256px;
+    width: 300px;
     height: 100vh;
     font-size: 0.8em;
     background-color: var(--main-color);
