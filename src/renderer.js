@@ -52,7 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 mac: (iface && iface.mac) || opt.dataset.mac,
                 name: opt.textContent,
             };
-            // Always send the current display name to main process before choosing interface
             chosen.displayName = nameInput.value;
             window.udp.chooseInterface(chosen);
             onlineUsers = [];
