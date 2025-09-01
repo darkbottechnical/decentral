@@ -1,18 +1,33 @@
 {
-  "name": "conveyor",
-  "version": "1.0.0",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron ."
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "devDependencies": {
-    "electron": "^37.4.0"
-  },
-  "dependencies": {
-    "electron-builder": "^26.0.12"
-  }
+    "name": "conveyor",
+    "version": "1.0.0",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "dist": "electron-builder"
+    },
+    "build": {
+        "appId": "com.darkbottechnical.dollar-store-discord",
+        "productName": "Dollar Store Discord",
+        "files": [
+            "**/*"
+        ],
+        "directories": {
+            "buildResources": "assets",
+            "output": "dist"
+        },
+        "win": {
+            "target": "portable",
+            "icon": "assets/icon.ico"
+        }
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "electron": "^37.4.0",
+        "electron-builder": "^26.0.12"
+    },
+    "dependencies": {}
 }
