@@ -123,6 +123,7 @@ function sendMessage(message, name, to = null) {
             mac: udpSocket.localIdentity?.mac || "unknown",
         },
         message,
+        timestamp: Date.now(),
     };
     let targetIp = udpSocket.broadcastAddr;
     if (to && to.ip) {

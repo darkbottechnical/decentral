@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta viewport="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta
             http-equiv="Content-Security-Policy"
             content="script-src 'self'"
@@ -13,46 +13,56 @@
     <body>
         <nav class="sidebar">
             <h1>Dollar Store Discord</h1>
-        </nav>
-        <main class="main-content">
-            <div class="horizontal-container">
-                <div class="vertical-label-setting">
-                    <label for="nameInput">Display Name</label>
 
-                    <input
-                        class="input"
-                        id="nameInput"
-                        placeholder="Your name"
-                    />
-                </div>
-                <div class="vertical-label-setting">
-                    <label for="statusSelect">Status</label>
-                    <select id="statusSelect">
-                        <option value="online">
-                            <span class="status-online"></span>Online
-                        </option>
-                        <option value="idle">
-                            <span class="status-idle"></span>Idle
-                        </option>
-                    </select>
-                </div>
-                <div class="vertical-label-setting">
-                    <label for="ifaceSelect">Interface</label>
-                    <select id="ifaceSelect"></select>
+            <div class="sidebar-setting">
+                <label for="nameInput">Display Name</label>
+                <input class="input" id="nameInput" placeholder="Your name" />
+            </div>
+
+            <div class="sidebar-setting">
+                <label for="statusSelect">Status</label>
+                <select id="statusSelect">
+                    <option value="online">Online</option>
+                    <option value="idle">Idle</option>
+                </select>
+            </div>
+
+            <div class="sidebar-setting">
+                <label for="ifaceSelect">Interface</label>
+                <select id="ifaceSelect"></select>
+            </div>
+
+            <div class="sidebar-setting">
+                <label for="themeSelect">Theme</label>
+                <div class="themes-container">
+                    <button
+                        data-theme="light"
+                        class="theme-button"
+                        style="background-color: aliceblue"
+                    ></button>
+                    <button
+                        data-theme="dark"
+                        class="theme-button"
+                        style="background-color: #202b49"
+                    ></button>
+                    <button
+                        data-theme="yellow"
+                        class="theme-button"
+                        style="background-color: #d6c23d"
+                    ></button>
                 </div>
             </div>
+
+            <div class="sidebar-bottom-button">
+                <button class="btn btn-nitro" id="nitro">GET NITRO</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
             <div id="messages-container"></div>
 
-            <div class="horizontal-container">
-                <label
-                    for="destInput"
-                    style="
-                        padding: 10px;
-                        text-align: center;
-                        vertical-align: middle;
-                    "
-                    >To:</label
-                >
+            <div class="horizontal-container message-input-container">
+                <label for="destInput">To:</label>
                 <input
                     class="input"
                     id="destInput"
@@ -66,16 +76,19 @@
                 />
                 <button class="btn" id="sendBtn">Send</button>
             </div>
+
             <p id="status"></p>
         </main>
-        <side>
+
+        <aside class="status-sidebar">
             <div id="statusList">
-                <p>
-                    Attach an interface to see online users. Or stay lonely, I
-                    couldn't care less.
+                <p style="padding: 8px">
+                    Attach an interface to see online users. Or don't and stay
+                    lonely.
                 </p>
             </div>
-        </side>
+        </aside>
+
         <script src="./src/renderer.js"></script>
     </body>
 </html>

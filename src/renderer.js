@@ -1,4 +1,9 @@
 // renderer.js
+
+// --- Load Theme ---
+const savedTheme = localStorage.getItem("theme");
+document.body.className = savedTheme || "dark-theme";
+
 document.addEventListener("DOMContentLoaded", () => {
     // --- DOM Elements ---
     const ifaceSelect = document.getElementById("ifaceSelect");
@@ -9,6 +14,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const messagesDiv = document.getElementById("messages-container");
     const statusList = document.getElementById("statusList");
     const destInput = document.getElementById("destInput");
+
+    const themeButtons = Array.from(document.querySelectorAll(".theme-button"));
+
+    themeButtons.forEach((el) => {
+        el.addEventListener("click", () => {
+            const targetTheme = `${el.getAttribute("data-theme")}-theme`;
+            document.body.className = targetTheme;
+            localStorage.setItem("theme", targetTheme);
+            document.querySelector(`.${targetTheme}`);
+            themeButtons
+                .find((tb) => tb.classList.contains("selected"))
+                ?.classList.remove("selected");
+            el.classList.add("selected");
+        });
+        if (savedTheme.replace("-theme", "") === el.getAttribute("data-theme"))
+            el.classList.add("selected");
+    });
+
+    document.getElementById("nitro").addEventListener("click", () => {
+        document.body.style.transform = "rotate(180deg)";
+    });
 
     // --- State ---
     let onlineUsers = [];
@@ -120,15 +146,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Message Receive Handler ---
     window.udp.onMessage((message) => {
-        let scrolledUp = false;
-        if (
-            messagesDiv.scrollTop != messagesDiv.scrollHeight &&
-            messagesDiv.scrollTop != 0
-        ) {
-            scrolledUp = true;
-        } else {
-            scrolledUp = false;
-        }
+        const atBottom =
+            messagesDiv.scrollHeight - messagesDiv.scrollTop ===
+            messagesDiv.clientHeight;
         const messageEl = document.createElement("div");
         messageEl.className = "message";
         messageEl.innerHTML = `
@@ -140,7 +160,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 : message.dest
                 ? message.dest.name
                 : "everyone"
-        }</div>
+        } <span style="font-weight: normal;">   @${new Date(
+            message.timestamp
+        ).toLocaleTimeString()}</span></div>
         <div class="message-message">${message.message}</div>
         `;
         if (message.dest && message.dest.mac === chosen.mac) {
@@ -152,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         messagesDiv.appendChild(messageEl);
-        if (scrolledUp == false) {
+        if (atBottom) {
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
     });
@@ -160,6 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- Online Users Rendering ---
     function renderOnlineUsers() {
         statusList.innerHTML = "";
+
         onlineUsers.forEach((status) => {
             const entry = document.createElement("div");
             entry.className = "status-entry";
@@ -167,7 +190,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="status-${status.status}"></span><strong>${
                 status.ip
             } [${status.mac.replaceAll(":", "")}]</strong><br/>
-                    ${status.name || "unknown"}
+                    <span style="margin-left: 10px;">${
+                        status.name || "unknown"
+                    }</span>
                 `;
             entry.addEventListener("click", () => {
                 destInput.value = status.mac.replaceAll(":", "");
