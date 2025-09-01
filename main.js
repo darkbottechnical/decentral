@@ -175,6 +175,7 @@ function createWindow() {
             contextIsolation: true,
             nodeIntegration: false,
         },
+        icon: path.join(__dirname, "assets/icon-rounded.png"),
     });
     mainWindow.removeMenu();
     mainWindow.loadFile("index.html");
