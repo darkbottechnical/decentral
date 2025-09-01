@@ -176,7 +176,7 @@ function createWindow() {
             nodeIntegration: false,
         },
     });
-
+    mainWindow.removeMenu();
     mainWindow.loadFile("index.html");
 
     mainWindow.on("closed", () => {
