@@ -136,7 +136,6 @@ function sendMessage(message, name, to = null) {
         if (packet.dest.mac != udpSocket.localIdentity.mac)
             mainWindow?.webContents.send("udp-message", packet);
     }
-    console.log(packet);
     const buf = Buffer.from(JSON.stringify(packet));
     udpSocket.send(buf, 0, buf.length, PORT, targetIp, (err) => {
         if (err) console.error("Send error:", err);

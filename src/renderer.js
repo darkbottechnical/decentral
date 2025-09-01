@@ -1,8 +1,9 @@
 // renderer.js
 
 // --- Load Theme ---
-const savedTheme = localStorage.getItem("theme");
-document.body.className = savedTheme || "dark-theme";
+const savedTheme = localStorage.getItem("theme") || "dark-theme";
+document.body.className = savedTheme;
+
 
 document.addEventListener("DOMContentLoaded", () => {
     // --- DOM Elements ---
@@ -64,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ifaceSelect.appendChild(opt);
         });
         ifaceSelect._ifaceList = list;
+        console.log("Received interfaces list:", list);
     });
 
     // --- Interface Selection Handler ---
@@ -245,4 +247,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.udp.debug((data) => {
         // TODO
     });
+
+    console.log("ifaceSelect element:", ifaceSelect);
 });
